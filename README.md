@@ -1,6 +1,12 @@
 # UCHC Project
 
-## Install and Run
+## Test Express App
+Enter these lines in the terminal. 
+ 	$ cd (project folder)
+	$ npm install
+ 	$ node app
+
+## Test Backend
 Enter these lines in the terminal.
- $ npm install
- $ node app
+	$ cd (project folder)/public/js
+	$ node router
