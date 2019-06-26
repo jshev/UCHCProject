@@ -14,6 +14,14 @@ function log_error(error) {
   console.log(error.cause)
 }
 
+const waitFor = (ms) => new Promise(r => setTimeout(r, ms));
+
+async function asyncForEach(array, callback) {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
+}
+
 // Find Tomorrow's No-Shows on-click function
 function noShowsTomorrow(threshold) {
   // CONNECT TO API... see athenahealthapi.js for details
@@ -51,101 +59,97 @@ function noShowsTomorrow(threshold) {
       appts = response.appointments
 
       // foreach booked appointment in booked appointments
-      for (var i = 0; i < appts.length; i++) {
-        // set appt as the booked appointment at index i in booked appointments
-        var appt = appts[i];
-        // starttime is in military format HH:MM
-        // split time by : and join array with no comma or space, so the times can be compared as numbers
-        // if appointment starts between 9AM (09:00) and 5PM (17:00), it is a midday appointment
-        if (appt.starttime.split(":").join("") > 0759 && appt.starttime.split(":").join("") < 1701) {
-          appt.middleDay = 1;
-          //console.log("Mid Day!")
-          //console.log(appt.starttime.split(":").join(""))
-        } else {
-          appt.middleDay = 0;
-          //console.log("Not mid day...")
-          //console.log(appt.starttime.split(":").join(""))
-        }
+      forEachBookedAppointment(api, appts, threshold, signal)
+        .then((result) => {
+          // TODO: uncomment to log appointments as a whole
+          console.log('Booked appointments tomorrow:')
+          console.log(appts)
+          /* for (var i = 0; i < appts.length; i++) {
+            console.log(appts[i].risk);
+          } */
+          console.log()
 
-        // TODO: need IDs of departments with high no show rates
-        if (appt.departmentid == 1) {
-          appt.departmentHighNoShow = 1
-          //console.log(appt.departmentid)
-          //console.log("High department!")
-        } else {
-          appt.departmentHighNoShow = 0
-          //console.log(appt.departmentid)
-          //console.log("Low department...")
-        }
+          signal.emit('appts', appts)
+        })
+        .catch((err) => {
+          // something wrong happened and the Promise was rejected
+          // handle the error
+          console.log(`There was an error: ${err.message || err}`);
+        });
+      // end foreach appt in appts
+    }).on('error', log_error) // end GET booked appointments
+  }) // end on ready in connection
 
-        // check if address1 is null, empty, or just a space
-        if (appt.patient.address1 == null || appt.patient.address1 == "" || appt.patient.address1 == " ") {
+  api.status.on('error', function(error) {
+    console.log(error)
+  }) // end log errors in connection
+} // end noShowsTomorrow method
+
+const forEachBookedAppointment = async (api, appts, threshold, signal) => {
+  await asyncForEach(appts, async (appt) => {
+    await waitFor(500);
+
+    if (appt.starttime.split(":").join("") > 0759 && appt.starttime.split(":").join("") < 1701) {
+      appt.middleDay = 1;
+      //console.log("Mid Day!")
+      //console.log(appt.starttime.split(":").join(""))
+    } else {
+      appt.middleDay = 0;
+      //console.log("Not mid day...")
+      //console.log(appt.starttime.split(":").join(""))
+    }
+
+    if (appt.departmentid == 1) {
+      appt.departmentHighNoShow = 1
+      //console.log(appt.departmentid)
+      //console.log("High department!")
+    } else {
+      appt.departmentHighNoShow = 0
+      //console.log(appt.departmentid)
+      //console.log("Low department...")
+    }
+
+    if (appt.patient.address1 == null || appt.patient.address1 == "" || appt.patient.address1 == " ") {
+      appt.noAddress = 1
+      //console.log("No or incomplete address...")
+    } else {
+      // check if city is null, empty, or just a space
+      if (appt.patient.city == null || appt.patient.city == "" || appt.patient.city == " ") {
+        appt.noAddress = 1
+        //console.log("No or incomplete address...")
+      } else {
+        // check if state is null, empty, or just a space
+        if (appt.patient.state == null || appt.patient.state == "" || appt.patient.state == " ") {
           appt.noAddress = 1
           //console.log("No or incomplete address...")
         } else {
-          // if address1 is present...
-          // check if city is null, empty, or just a space
-          if (appt.patient.city == null || appt.patient.city == "" || appt.patient.city == " ") {
+          // check if zip is null, empty, or just a space
+          if (appt.patient.zip == null || appt.patient.zip == "" || appt.patient.zip == " ") {
             appt.noAddress = 1
             //console.log("No or incomplete address...")
           } else {
-            // if address1 and city are present...
-            // check if state is null, empty, or just a space
-            if (appt.patient.state == null || appt.patient.state == "" || appt.patient.state == " ") {
-              appt.noAddress = 1
-              //console.log("No or incomplete address...")
-            } else {
-              // if address1, city, and state are present...
-              // check if zip is null, empty, or just a space
-              if (appt.patient.zip == null || appt.patient.zip == "" || appt.patient.zip == " ") {
-                appt.noAddress = 1
-                //console.log("No or incomplete address...")
-              } else {
-                // if address1, city, state, and zip are present...
-                appt.noAddress = 0
-                //console.log("Address present!")
-              }
-            }
+            appt.noAddress = 0
+            //console.log("Address present!")
           }
         }
+      }
+    }
 
-        // GET patient's past appointments
-        api.GET('/patients/' + appt.patientid + '/appointments', {
-          params: {
-            // include cancelled and past appointments, since that is the point of this request
-            showcancelled: 'Y',
-            showpast: 'Y'
-          }
-        }).on('done', function(response) {
-          // response include totalcount of patient's booked appointments
-          var total = response.totalcount
-          // initialize noShows to 0
-          var noShows = 0
-          // set pastAppts to appointments from response
-          var pastAppts = response.appointments
-          //console.log('Appointment history:')
-          //console.log(pastAppts);
-          //console.log()
+    api.GET('/patients/' + appt.patientid + '/appointments', {
+      params: {
+        showcancelled: 'Y',
+        showpast: 'Y'
+      }
+    }).on('done', function(response) {
+      var total = response.totalcount
+      var pastAppts = response.appointments
+      //console.log('Appointment history:')
+      //console.log(pastAppts);
+      //console.log()
 
-          // foreach past appointment in past appointments...
-          for (var j = 0; j < pastAppts.length; j++) {
-            // set pastAppt as the past appointment at index j in past appointments
-            var pastAppt = pastAppts[j]
-            if (pastAppt.appointmentstatus == 'x') {
-              // appointmentstatus x=cancelled.
-              // appointmentstatus f=future, but it can include appointments where were never checked in, even if the appointment date is in the past. It is up to a practice to cancel appointments as a no show when appropriate to do so...
-              if (pastAppt.appointmentcancelreasonid != null && pastAppt.appointmentcancelreasonid == 2) {
-                // appointmentcancelreasonid ought to be set for cancelled appointments
-                // appointmentcancelreasonid 2="no-show"
-                // increment number of no-shows
-                noShows = noShows + 1;
-              }
-            }
-          }
-
-          // calculate the patient's track record by dividing their number of no-shows by their total number of booked appointments
-          var track = noShows / total;
-          // if the patient's track record is greater than or equal to 50%...
+      forEachPastAppointment(pastAppts)
+        .then((result) => {
+          var track = result / total;
           if (track >= 0.5) {
             appt.patientTrackRecord = 1
           } else {
@@ -153,12 +157,8 @@ function noShowsTomorrow(threshold) {
           }
           //console.log(appt.patientTrackRecord);
 
-          // use calculateRisk function in predictiveModel script to calculate teh risk of appointment being a no-show
-          // using unique variables set thus far
           var risk = predictiveModel.calculateRisk(appt.noAddress, appt.middleDay, appt.departmentHighNoShow, appt.patientTrackRecord)
 
-          // compare risk to threshold
-          // if it's below, it's low risk; if it's equal, it's medium risk; if it's above, it's high risk
           if (risk < threshold) {
             appt.risk = 'low'
           } else if (risk == threshold) {
@@ -174,20 +174,31 @@ function noShowsTomorrow(threshold) {
           //console.log("Threshold: " + threshold)
           //console.log()
           signal.emit('pastAppts', pastAppts)
-        }).on('error', log_error) // end GET all appointments of patients
+        })
+        .catch((err) => {
+          // something wrong happened and the Promise was rejected
+          // handle the error
+          console.log(`There was an error: ${err.message || err}`);
+        });
+    }).on('error', log_error) // end GET all appointments of patients
+    await waitFor(500);
+  });
+  return;
+}
 
-      } // end foreach appt in appts
+const forEachPastAppointment = async (pasts) => {
+  var noShows = 0
+  await asyncForEach(pasts, async (past) => {
+    await waitFor(150);
+    if (past.appointmentstatus == 'x') {
+      if (past.appointmentcancelreasonid != null && past.appointmentcancelreasonid == 2) {
+        noShows = noShows + 1;
+      }
+    }
+  });
+  return noShows;
+}
 
-      // TODO: uncomment to log appointments as a whole
-      console.log('Booked appointments tomorrow:')
-      console.log(appts)
-      console.log()
-      signal.emit('appts', appts)
-    }).on('error', log_error) // end GET booked appointments
-  }) // end on ready in connection
-  api.status.on('error', function(error) {
-    console.log(error)
-  }) // end log errors in connection
-} // end noShowsTomorrow method
+
 
 noShowsTomorrow(4)
