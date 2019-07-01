@@ -143,7 +143,7 @@ function noShowsThisWeek(threshold) {
           console.log('Booked appointments this week:')
           console.log(appts)
           console.log()
-
+          return appts;
           signal.emit('appts', appts)
         })
         .catch((err) => {
@@ -162,7 +162,7 @@ function noShowsThisWeek(threshold) {
 
 const forEachBookedAppointment = async (api, appts, threshold, signal) => {
   await asyncForEach(appts, async (appt) => {
-    await waitFor(2000);
+    await waitFor(1000);
 
     var apptDate = new Date(appt.date);
     if (weekday[apptDate.getDay()] == "Tuesday" || weekday[apptDate.getDay()] == "Thursday") {
@@ -267,7 +267,7 @@ const forEachBookedAppointment = async (api, appts, threshold, signal) => {
           console.log(`There was an error: ${err.message || err}`);
         });
     }).on('error', log_error) // end GET all appointments of patients
-    await waitFor(2000);
+    await waitFor(1000);
   });
   return;
 }
