@@ -27,7 +27,7 @@ function noShowsTomorrow(threshold) {
     var tomorrow = new Date()
     // TODO: change tomorrow's date... 6/21 had a lot of test patients
     //tomorrow.setDate(today.getDate() + 1)
-    tomorrow.setDate(21)
+    tomorrow.setDate(24)
 
     // format the date to that used by the API MM/DD/YYYY
     function formatDate(date) {
@@ -114,7 +114,8 @@ function noShowsTomorrow(threshold) {
           params: {
             // include cancelled and past appointments, since that is the point of this request
             showcancelled: 'Y',
-            showpast: 'Y'
+            showpast: 'Y',
+            limit: 10
           }
         }).on('done', function(response) {
           // response include totalcount of patient's booked appointments
@@ -122,6 +123,7 @@ function noShowsTomorrow(threshold) {
           // initialize noShows to 0
           var noShows = 0
           // set pastAppts to appointments from response
+          //console.log(response);
           var pastAppts = response.appointments
           //console.log('Appointment history:')
           //console.log(pastAppts);
@@ -131,6 +133,7 @@ function noShowsTomorrow(threshold) {
           for (var j = 0; j < pastAppts.length; j++) {
             // set pastAppt as the past appointment at index j in past appointments
             var pastAppt = pastAppts[j]
+            //console.log(pastAppt);
             if (pastAppt.appointmentstatus == 'x') {
               // appointmentstatus x=cancelled.
               // appointmentstatus f=future, but it can include appointments where were never checked in, even if the appointment date is in the past. It is up to a practice to cancel appointments as a no show when appropriate to do so...
@@ -182,10 +185,10 @@ function noShowsTomorrow(threshold) {
       console.log('Booked appointments tomorrow:')
       console.log(appts)
       for (var i = 0; i < appts.length; i++) {
-        console.log(appts[i].risk);
+        //console.log(appts[i].risk);
       }
 
-      console.log()
+      //console.log()
       signal.emit('appts', appts)
     }).on('error', log_error) // end GET booked appointments
   }) // end on ready in connection
