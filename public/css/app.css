@@ -6,12 +6,24 @@ body {
   margin: 2.5%;
 }
 
+.apptContainer {
+  
+}
+
 label {
   margin-right: 15px;
 }
 
 .btn1 {
   margin-right: 3%;
+}
+
+#hidden {
+  visibility: hidden;
+}
+
+#shown {
+  visibility: visible;
 }
 
 #finePrint {
@@ -50,19 +62,7 @@ label {
   word-break: normal;
 }
 
-.tg .medium {
-  background-color: #fffe65;
-  text-align: left;
-  vertical-align: top;
-}
-
-.tg .low {
-  background-color: #9aff99;
-  text-align: left;
-  vertical-align: top;
-}
-
-.tg .tableTop {
+#tableTop {
   font-weight: bold;
   font-size: large;
   background-color: #ffffff;
@@ -70,7 +70,19 @@ label {
   vertical-align: top;
 }
 
-.tg .high {
+#medium {
+  background-color: #fffe65;
+  text-align: left;
+  vertical-align: top;
+}
+
+#low {
+  background-color: #9aff99;
+  text-align: left;
+  vertical-align: top;
+}
+
+#high {
   background-color: #fd6864;
   text-align: left;
   vertical-align: top;

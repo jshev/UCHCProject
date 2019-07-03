@@ -11,4 +11,4 @@ Enter these lines in the terminal.
 Enter these lines in the terminal.
 
     $ cd (project folder)/public/js
-    $ node router
+    $ node routerAsync

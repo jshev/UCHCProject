@@ -36,6 +36,124 @@ function getAge(dateString) {
   return age;
 }
 
+// Find Tomorrow's No-Shows on-click function
+function noShowsTomorrow(threshold) {
+  // CONNECT TO API... see athenahealthapi.js for details
+  var api = new athenahealthapi.Connection(version, key, secret, practiceid)
+  api.status.on('ready', function() {
+    var signal = new events.EventEmitter
+    var appts;
+
+    // new Date is automatically today's date
+    var today = new Date()
+    var tomorrow = new Date()
+    // TODO: change tomorrow's date... 6/21 had a lot of test patients
+    tomorrow.setDate(today.getDate() + 1)
+    //tomorrow.setDate(21)
+
+    // format the date to that used by the API MM/DD/YYYY
+    function formatDate(date) {
+      return (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear()
+    }
+
+    // GET booked appointments between startdate and enddate
+    api.GET('/appointments/booked', {
+      params: {
+        // MUST set providerid or departmentid in order to get appointments
+        departmentid: 1,
+        startdate: formatDate(tomorrow),
+        enddate: formatDate(tomorrow),
+        showcancelled: false,
+        showcopay: false,
+        // need patient details to find the patient's address and calculate their track record
+        showpatientdetail: true
+      }
+    }).on('done', function(response) {
+      // set appts to appointments from response
+      appts = response.appointments
+
+      // foreach booked appointment in booked appointments
+      forEachBookedAppointment(api, appts, threshold, signal)
+        .then((result) => {
+          // TODO: uncomment to log appointments as a whole
+          console.log('Booked appointments tomorrow:')
+          console.log(appts)
+          signal.emit('appts', appts)
+        })
+        .catch((err) => {
+          // something wrong happened and the Promise was rejected
+          // handle the error
+          console.log(`There was an error: ${err.message || err}`);
+        });
+      // end foreach appt in appts
+    }).on('error', log_error) // end GET booked appointments
+  }) // end on ready in connection
+
+  api.status.on('error', function(error) {
+    console.log(error)
+  }) // end log errors in connection
+} // end noShowsTomorrow method
+
+// Find This Week's No-Shows on-click function
+function noShowsThisWeek(threshold) {
+  // CONNECT TO API... see athenahealthapi.js for details
+  var api = new athenahealthapi.Connection(version, key, secret, practiceid)
+  api.status.on('ready', function() {
+    var signal = new events.EventEmitter
+    var appts;
+
+    // new Date is automatically today's date
+    var today = new Date()
+    var tomorrow = new Date()
+    var nextWeek = new Date()
+    tomorrow.setDate(today.getDate() + 1)
+    nextWeek.setDate(today.getDate() + 8)
+    console.log("Tomorrow is " + tomorrow);
+    console.log("Next week is " + nextWeek);
+
+    // format the date to that used by the API MM/DD/YYYY
+    function formatDate(date) {
+      return (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear()
+    }
+
+    // GET booked appointments between startdate and enddate
+    api.GET('/appointments/booked', {
+      params: {
+        // MUST set providerid or departmentid in order to get appointments
+        departmentid: 1,
+        startdate: formatDate(tomorrow),
+        enddate: formatDate(nextWeek),
+        showcancelled: false,
+        showcopay: false,
+        // need patient details to find the patient's address and calculate their track record
+        showpatientdetail: true
+      }
+    }).on('done', function(response) {
+      // set appts to appointments from response
+      appts = response.appointments
+
+      // foreach booked appointment in booked appointments
+      forEachBookedAppointment(api, appts, threshold, signal)
+        .then((result) => {
+          // TODO: uncomment to log appointments as a whole
+          console.log('Booked appointments this week:')
+          console.log(appts)
+          signal.emit('appts', appts)
+        })
+        .catch((err) => {
+          // something wrong happened and the Promise was rejected
+          // handle the error
+          console.log(`There was an error: ${err.message || err}`);
+        });
+      // end foreach appt in appts
+    }).on('error', log_error) // end GET booked appointments
+  }) // end on ready in connection
+
+  api.status.on('error', function(error) {
+    console.log(error)
+  }) // end log errors in connection
+} // end noShowsThisWeek method
+
 const forEachBookedAppointment = async (api, appts, threshold, signal) => {
   await asyncForEach(appts, async (appt) => {
     await waitFor(1000);
@@ -171,5 +289,5 @@ module.exports = {
   forEachBookedAppointment: forEachBookedAppointment
 };
 
-//noShowsThisWeek(5)
+noShowsThisWeek(5)
 //noShowsTomorrow(5)
