@@ -1,0 +1,31 @@
+<div class="myContainer">
+  <h1>UCHC Scheduling System</h1>
+  <br>
+  <div class="right-button"><a href ng-href="#/main">Back ↩</a></div>
+  <div class="alert alert-danger" ng-show="page_load_error"> {{ page_load_error }} </div>
+
+  <div ng-show="!finished_loading">
+    <h4> <b>Processing...</b> </h4>
+  </div>
+
+  <div ng-show="finished_loading">
+    <h4>Appointments</h4>
+    <p id="finePrint">High-risk appointments are highlighted in red, medium-risk appointments
+      are highlighted in yellow, and low-risk appointments are highlighted in green.</p>
+
+    <table class="tg">
+      <tr>
+        <th id="tableTop">ID</th>
+        <th id="tableTop">Name</th>
+        <th id="tableTop">Date</th>
+        <th id="tableTop">Time</th>
+      </tr>
+      <tr ng-repeat="appointment in appointments | orderBy: ['date', 'starttime']">
+        <td id={{appointment.risk}}> {{appointment.appointmentid}} </td>
+        <td id={{appointment.risk}}> {{appointment.patient.firstname}} {{appointment.patient.lastname}} </td>
+        <td id={{appointment.risk}}> {{appointment.date}} </td>
+        <td id={{appointment.risk}}> {{appointment.starttime}}</td>
+      </tr>
+    </table>
+  </div>
+</div>

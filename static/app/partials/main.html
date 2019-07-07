@@ -1,0 +1,18 @@
+<div class="myContainer">
+  <h1>UCHC Scheduling System</h1>
+  <br>
+  <form class="form-inline">
+    <div class="form-group">
+      <label for="threshold">Risk Threshold (0-9): </label>
+      <input type="number" id="threshold" min="0" max="9" class="form-control" placeholder="5" ng-model="threshold">
+    </div>
+  </form>
+  <p id="finePrint">Determines the risk scale of appointments. Appointments with risk scores
+    over the threshold qualify as high, even if the threshold is set to 0.</p>
+
+  <br>
+  <div id="wrapper">
+    <a ng-href="#/main/day/{{threshold}}" class="btn1"><button type="button" class="btn btn-outline-dark">Find Tomorrow's No-Shows</button></a>
+    <a ng-href="#/main/week/{{threshold}}"><button type="button" class="btn btn-outline-dark">Find This Week's No-Shows</button></a>
+  </div>
+</div>
