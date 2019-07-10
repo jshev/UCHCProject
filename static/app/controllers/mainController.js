@@ -7,16 +7,18 @@
     $scope.finished_loading = false;
     $scope.page_load_error = null;
 
-    apptProvider.getAppts($routeParams.timeframe, $routeParams.threshold, function(err, appts) {
-      //console.log("getAppts from provider called in controller");
-      $scope.finished_loading = true;
-      if (err) {
-        $scope.page_load_error = "Unable to view appointments: " + JSON.stringify(err);
-      } else {
-        //console.log(appts);
-        $scope.appointments = appts;
-      }
-    });
+    if ($routeParams.timeframe != null) {
+      apptProvider.getAppts($routeParams.timeframe, $routeParams.threshold, function(err, appts) {
+        //console.log("getAppts from provider called in controller");
+        $scope.finished_loading = true;
+        if (err) {
+          $scope.page_load_error = "Unable to view appointments: " + JSON.stringify(err);
+        } else {
+          //console.log(appts);
+          $scope.appointments = appts;
+        }
+      });
+    }
 
   }
 

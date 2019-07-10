@@ -233,4 +233,5 @@ const forEachPastAppointment = async (pasts) => {
 
 module.exports.findNoShows = findNoShows
 
-//findNoShows("week", 5)
+//console.log(findNoShows("week", 5));
+//findNoShows("week", 5);

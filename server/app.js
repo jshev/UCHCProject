@@ -560,8 +560,8 @@ app.get("/main", function(req, res) {
 });
 
 app.get("/main/:timeframe/:threshold", async function(req, res) {
-  var thresh = req.params.threshold;
-  let appointments = await router.findNoShows("week", thresh);
+  let appointments = await router.findNoShows(req.params.timeframe, req.params.threshold);
+  console.log(appointments);
   return send_success_resp(res, appointments);
 });
 
