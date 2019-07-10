@@ -9,11 +9,7 @@ uchcApp.config(function($routeProvider) {
       controller: "mainController",
       templateUrl: "app/partials/main.html"
     })
-    .when("/main/day/:threshold", {
-      controller: "mainController",
-      templateUrl: "app/partials/viewAppts.html"
-    })
-    .when("/main/week/:threshold", {
+    .when("/main/:timeframe/:threshold", {
       controller: "mainController",
       templateUrl: "app/partials/viewAppts.html"
     })
