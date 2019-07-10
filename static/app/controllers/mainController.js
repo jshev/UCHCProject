@@ -1,28 +1,46 @@
 (function() {
 
   // 1. declare our controller.
-  function mainController($scope, apptProvider) {
-
+  function mainController($scope, $routeParams, apptProvider) {
+    console.log("Controller connected!");
     $scope.threshold = 5;
-    $scope.page_load_error = null;
     $scope.finished_loading = false;
-    //$scope.finished_loading = true;
+    $scope.page_load_error = null;
 
-    /* function get_appts() {
-      $scope.appointments = apptProvider.getAppts().query(function(resp) {
+    $scope.getDaily = function() {
+      console.log("getDaily in controller callled");
+      apptProvider.getDailyAppts($routeParams.threshold, function(err, appts) {
+      //apptProvider.getDailyAppts($scope.threshold, function(err, appts) {
+        console.log("getDailyAppts from provider called in controller");
         $scope.finished_loading = true;
-        $scope.appointments = resp;
-      }, function(err) {
-        $scope.page_load_error = err.message;
+        if (err) {
+          $scope.page_load_error = "Unable to view appointments: " + JSON.stringify(err);
+        } else {
+          console.log(appts);
+          $scope.appointments = appts;
+        }
       });
     }
 
-    get_appts(); */
+    //$scope.getWeekly = function() {
+      console.log("getWeekly in controller callled");
+      apptProvider.getWeeklyAppts($routeParams.threshold, function(err, appts) {
+      //apptProvider.getWeeklyAppts($scope.threshold, function(err, appts) {
+        console.log("getWeeklyAppts from provider called in controller");
+        $scope.finished_loading = true;
+        if (err) {
+          $scope.page_load_error = "Unable to view appointments: " + JSON.stringify(err);
+        } else {
+          console.log(appts);
+          $scope.appointments = appts;
+        }
+      });
+    //}
+
+
   }
 
-
-
   // 2. create the controller and give it $scope.
-  uchcApp.controller("mainController", ['$scope', 'apptProvider', mainController]);
+  uchcApp.controller("mainController", ['$scope', '$routeParams', 'apptProvider', mainController]);
 
 })();

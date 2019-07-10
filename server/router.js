@@ -72,12 +72,14 @@ function findNoShows(timeframe, threshold) {
         enddate: formatDate(end),
         showcancelled: false,
         showcopay: false,
+        limit: 2,
         // need patient details to find the patient's address and calculate their track record
         showpatientdetail: true
       }
     }).on('done', function(response) {
       // set appts to appointments from response
       appts = response.appointments
+      console.log(response.totalcount);
 
       // foreach booked appointment in booked appointments
       forEachBookedAppointment(api, appts, threshold, signal)
@@ -177,6 +179,7 @@ const forEachBookedAppointment = async (api, appts, threshold, signal) => {
       }
     }).on('done', function(response) {
       var total = response.totalcount
+      //console.log(total);
       var pastAppts = response.appointments
       //console.log('Appointment history:')
       //console.log(pastAppts);
@@ -209,7 +212,7 @@ const forEachBookedAppointment = async (api, appts, threshold, signal) => {
           console.log(`There was an error: ${err.message || err}`);
         });
     }).on('error', log_error) // end GET all appointments of patients
-    await waitFor(1000);
+    await waitFor(2000);
   });
   return;
 }
@@ -217,6 +220,7 @@ const forEachBookedAppointment = async (api, appts, threshold, signal) => {
 const forEachPastAppointment = async (pasts) => {
   var noShows = 0
   await asyncForEach(pasts, async (past) => {
+    //console.log("past");
     await waitFor(100);
     if (past.appointmentstatus == 'x') {
       if (past.appointmentcancelreasonid != null && past.appointmentcancelreasonid == 2) {
