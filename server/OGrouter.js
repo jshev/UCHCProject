@@ -42,7 +42,7 @@ function formatDate(date) {
 }
 
 // Find No-Shows function
-function findNoShows(timeframe, threshold, callback) {
+function findNoShows(timeframe, threshold) {
   console.log("findNoShows called!");
   // CONNECT TO API... see athenahealthapi.js for details
   var api = new athenahealthapi.Connection(version, key, secret, practiceid)
@@ -72,6 +72,7 @@ function findNoShows(timeframe, threshold, callback) {
         enddate: formatDate(end),
         showcancelled: false,
         showcopay: false,
+        limit: 2,
         // need patient details to find the patient's address and calculate their track record
         showpatientdetail: true
       }
@@ -86,25 +87,19 @@ function findNoShows(timeframe, threshold, callback) {
           // TODO: uncomment to log appointments as a whole
           //console.log('Booked appointments for the' + timeframe + ':')
           //console.log(appts)
-          return callback(null, appts);
-          //return appts;
+          return appts;
           signal.emit('appts', appts)
         })
         .catch((err) => {
           // something wrong happened and the Promise was rejected
           // handle the error
-          return callback(err);
           console.log(`There was an error: ${err.message || err}`);
         });
       // end foreach appt in appts
-    }).on('error', function(error) {
-      return callback(error);
-      console.log(error)
-    }) // end GET booked appointments
+    }).on('error', log_error) // end GET booked appointments
   }) // end on ready in connection
 
   api.status.on('error', function(error) {
-    return callback(error);
     console.log(error)
   }) // end log errors in connection
 } // end findNoShows

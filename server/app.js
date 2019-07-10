@@ -559,10 +559,14 @@ app.get("/main", function(req, res) {
   return send_success_resp(res, []);
 });
 
-app.get("/main/:timeframe/:threshold", async function(req, res) {
-  let appointments = await router.findNoShows(req.params.timeframe, req.params.threshold);
-  console.log(appointments);
-  return send_success_resp(res, appointments);
+app.get("/main/:timeframe/:threshold", function(req, res) {
+  var appointments = router.findNoShows(req.params.timeframe, req.params.threshold, function(err, appts) {
+    if (err) {
+      return send_error_resp(err);
+    } else {
+      return send_success_resp(res, appts);
+    }
+  });
 });
 
 console.error("Starting server on port " + _port);
