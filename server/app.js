@@ -6,11 +6,6 @@ var express = require('express'),
   const waitFor = (ms) => new Promise(r => setTimeout(r, ms));
 
 var router = require('./router');
-if (router != null) {
-  console.log("Router connected!");
-} else {
-  console.log("Router not connected...");
-}
 
 var _port = 3000;
 
@@ -20,7 +15,7 @@ app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(express.static(__dirname + "/../static"));
 
-var appointments = [{
+/* var appointments = [{
     date: '07/11/2019',
     appointmentid: '1163479',
     patient: {
@@ -556,25 +551,17 @@ var appointments = [{
     patientTrackRecord: 0,
     risk: 'low'
   }
-];
+]; */
+
 
 
 app.get("/main", function(req, res) {
-  //var appointments = [];
-  return send_success_resp(res, appointments);
+  return send_success_resp(res, []);
 });
 
-app.get("/main/day/:threshold", async function(req, res) {
+app.get("/main/:timeframe/:threshold", async function(req, res) {
   var thresh = req.params.threshold;
-  //let appointments = await router.findNoShows("day", thresh);
-  //console.log("Got Daily Appointments!");
-  return send_success_resp(res, appointments);
-});
-
-app.get("/main/week/:threshold", async function(req, res) {
-  var thresh = req.params.threshold;
-  //let appointments = await router.findNoShows("week", thresh);
-  //console.log("Got Weekly Appointments!");
+  let appointments = await router.findNoShows("week", thresh);
   return send_success_resp(res, appointments);
 });
 

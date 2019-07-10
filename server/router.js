@@ -79,14 +79,14 @@ function findNoShows(timeframe, threshold) {
     }).on('done', function(response) {
       // set appts to appointments from response
       appts = response.appointments
-      console.log(response.totalcount);
+      //console.log(response.totalcount);
 
       // foreach booked appointment in booked appointments
       forEachBookedAppointment(api, appts, threshold, signal)
         .then((result) => {
           // TODO: uncomment to log appointments as a whole
           //console.log('Booked appointments for the' + timeframe + ':')
-          console.log(appts)
+          //console.log(appts)
           return appts;
           signal.emit('appts', appts)
         })
