@@ -12,6 +12,8 @@
 //	 implied.  See the License for the specific language governing
 //	 permissions and limitations under the License.
 
+/* Used in router.js to connect to athenahealth API. */
+
 var events = require('events')
 var https = require('https')
 var querystring = require('querystring')
